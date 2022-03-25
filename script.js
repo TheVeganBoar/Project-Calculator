@@ -1,71 +1,137 @@
-let a = prompt("Enter a number");
-let b = prompt("Enter a second number");
-let c = prompt("What operator would you like to use (+, -, *, /)"); 
-let num1 = parseInt(a);
-let num2 = parseInt(b);
-let operator = c;
- 
+const numberButtons = document.querySelectorAll('[data-number]');
+const operationButtons = document.querySelectorAll('[data-operation]');
+const clearButton = document.querySelectorAll('[data-clear]');
+const deleteButton = document.querySelectorAll('[data-delete]');
+const equalsButton = document.querySelectorAll('[data-equals]');
+const previousOperandTextElement = document.querySelectorAll('[data-previous-operand]');
+const currentOperandTextElement = document.querySelectorAll('[data-current-operand]');
 
 
-
-// function add
-function add(num1, num2) {
-    return num1 + num2;
-} 
-
-// function subtract
-function subtract(num1, num2) {
-    return num1 - num2;
-} 
-
-// function multiply
-function multiply(num1, num2) {
-    return num1 * num2;
-}
-
-// function divide
-function divide (num1, num2) {
-    if (divide == 'Infinity') {
-        return alert ('You cant divide by zero');
+class Calculator {
+    constructor(previousOperandTextElement, currentOperandTextElement) {
+        this.previousOperandTextElement = previousOperandTextElement;
+        this.currentOperandTextElement = currentOperandTextElement;
+        this.clear();
     }
-    return num1 / num2;
-}
 
-// function operate
-function operate(num1, num2, operator) {
-    switch (operator) {
-        case "+":
-            add(num1,num2);
-            break;
-        
-        case "-":
-            subtract(num1,num2);
-            break;
-
-        case "*":
-            multiply(num1,num2);
-            break; 
-
-        case "/":
-            divide(num1,num2);
-            break;
-
-        default:
-            alert ("Error! Didnt recieve an operator. Try again.");
+    clear() {
+        this.currentOperand = '';
+        this.previousOperand = '';
+        this.operation = undefined;
     }
-} 
 
-// call operate function with argument selected
-operate(num1, num2, operator);
+    delete() {
+        this.currentOperand = this.currentOperand.toString().slice(0, -1);
+    } 
 
+    appendNumber(number) {
+        if (number === '.' && this.currentOperand.includes('.')) return;
+        this.currentOperand = this.currentOperand.toString() + number.toString();
+    }
 
-add(num1, num2);
-subtract(num1, num2);
-multiply(num1, num2);
-divide(num1, num2);
+    chooseOperation(operation) {
+        if (currentOperand === '') return
+        if (previousOperand !== '') {
+            this.compute()
+        }
+        this.operation = operation
+        this.previousOperand = this.currentOperand
+        this.currentOperand = ''
+    }
 
+    compute() {
+        let computation
+        let prev = parseFloat(this.previousOperand)
+        let current = parseFloat(this.currentOperand)
+        if (isNaN(prev) ||  isNaN(current)) return
 
-// display
-function display (button) {
-    return button.textContent
+        switch (this.operation) {
+            case '+':
+                computation = prev + current
+                break
+            case '-':
+                computation = prev - current
+                break
+            case '*':
+                computation = prev * current
+                break
+            case '/':
+                computation = prev / current
+                break
+            default:
+                return    
+        }
+        this.currentOperand = computation
+        this.operation = undefined
+        this.previousOperand = ''
+    }
+
+    getDisplayNumber(number) {
+        const stringNumber = number.toString()
+        const integerDigits = parseFloat(stringNumber.split('.')[0])
+        const decimalDigits = stringNumber.split('.')[1]
+        let integerDisplay
+        if (isNaN(integerDigist)) {
+            integerDisplay = ''
+        } else {
+            integerDisplay = integerDisplay.toLocaleString('en', {
+                maximumFractionDigits: 0})
+        }
+        if (decimalDigits != null) {
+            return `${this.integerDisplay} ${this.digitalDigits}`
+        } else {
+            return integerDisplay
+        }
+    }
+
+    updateDisplay() {
+        this.currentOperandTextElement.innerText = 
+        this.getDisplayNumber(this.currentOperand)
+        if (this.operation !== null) {
+            this.previousOperandTextElement.innerText =
+            `${this.getDisplayNumber(previousOperand)} ${this.operation}`
+        } else {
+            this.previousOperandTextElement.innerText = ''
+        }
+        this.previousOperandTextElement.innerText = this.previousOperand;
+    }
+
 }
+
+numberButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        calculator.appendNumber(button.innerText)
+    })
+});
+
+
+const calculator = new Calculator(previousOperandTextElement, currentOperandTextElement)
+
+numberButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        calculator.appendNumber(button.innerText)
+        calculator.updateDisplay()
+    })
+})
+
+operationButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        calculator.chooseOperation(button.innerText)
+        calculator.updateDisplay()
+    })
+})
+
+equalsButton.addEventListener('click', button => {
+    calculator.compute()
+    calculator.updateDisplay()
+})
+
+clearButton.addEventListener('click', button => {
+    calculator.clear()
+    calculator.updateDisplay()
+})
+
+deleteButton.addEventListener('click', button => {
+    calculator.delete()
+    calculator.updateDisplay()
+})
